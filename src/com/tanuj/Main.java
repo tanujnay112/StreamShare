@@ -12,8 +12,8 @@ import java.util.Base64;
 
 public class Main implements WebcamMotionListener {
 
-  final static String location = "";
-  final static String channelName = "";
+  static String location = "";
+  final static String channelName = "slides";
   static Dimension length;
   static Webcam w;
 
@@ -32,6 +32,7 @@ public class Main implements WebcamMotionListener {
   }
 
   public static void main(String[] args) {
+    location = args[0];
     w = Webcam.getDefault();
     System.out.println("STARTING");
     Main m = new Main();

@@ -14,7 +14,7 @@ import java.util.Base64;
 
 public class Subscriber {
     static final String address = "";
-    static final String channel = "";
+    static final String channel = "slides";
 
     public static void main(String args[]) {
         /*Jedis jedis = new Jedis("localhost");
@@ -24,18 +24,15 @@ public class Subscriber {
 
         Jedis jedis = new Jedis(address);
         System.out.println("Starting subscriber for channel " + channel);
-
+        final ImageDisplay display = new ImageDisplay();
         while (true) {
             jedis.subscribe(new JedisPubSub() {
                 @Override
                 public void onMessage(String channel, String message) {
                     super.onMessage(channel, message);
                     byte [] imageBytes = Base64.getDecoder().decode(message);
-                    BufferedImage image = createRGBImage(imageBytes, 1500, 1000);
-
-                    JLabel picLabel = new JLabel(new ImageIcon(image));
-                    add(picLabel);
-
+                    BufferedImage image = createRGBImage(imageBytes, 640, 480);
+                    display.setImage(image);
                 }
 
                 @Override
