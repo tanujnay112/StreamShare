@@ -13,7 +13,7 @@ import java.io.OutputStream;
 import java.util.Base64;
 
 public class Subscriber {
-    static final String address = "";
+    static final String address = "10.0.0.62";
     static final String channel = "slides";
 
     public static void main(String args[]) {
@@ -31,7 +31,7 @@ public class Subscriber {
                 public void onMessage(String channel, String message) {
                     super.onMessage(channel, message);
                     byte [] imageBytes = Base64.getDecoder().decode(message);
-                    BufferedImage image = createRGBImage(imageBytes, 640, 480);
+                    BufferedImage image = createRGBImage(imageBytes, 176, 144);
                     display.setImage(image);
                 }
 

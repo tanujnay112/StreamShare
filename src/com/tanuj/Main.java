@@ -44,7 +44,8 @@ public class Main implements WebcamMotionListener {
   public static void frameChange() {
     System.out.println("CHANGED");
     ByteBuffer bb = w.getImageBytes();
-    byte[] bytes = new byte[length.height*length.width];
+    System.out.printf("height: %d, width: %d\n", length.height, length.width);
+    byte[] bytes = new byte[length.height*length.width*3];
     synchronized(bb){
       bb.rewind();
       bb.get(bytes);
