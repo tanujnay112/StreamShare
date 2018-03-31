@@ -20,8 +20,7 @@ public class Main implements WebcamMotionListener {
   public static void publish(byte[] b){
     Jedis jedis = new Jedis(location);
 
-    jedis.publish(channelName, new String(Base64.getEncoder()
-        .encodeToString(b)));
+    jedis.publish(channelName, Base64.getEncoder().encodeToString(b));
   }
 
   public Main(){
