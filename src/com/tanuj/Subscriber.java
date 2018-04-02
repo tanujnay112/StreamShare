@@ -8,10 +8,11 @@ import java.awt.image.*;
 import java.util.Base64;
 
 public class Subscriber {
-    static final String address = "128.237.130.67";
+    static String address;
     static final String channel = "slides";
 
     public static void main(String args[]) {
+        address = args[0];
         /*Jedis jedis = new Jedis("localhost");
         Scanner scanner = new Scanner(System.in);
         System.out.printf("Enter the channel name:");
@@ -31,6 +32,7 @@ public class Subscriber {
                     message = message.substring(message.indexOf(";")+1);
                     byte [] imageBytes = Base64.getDecoder().decode(message);
                     BufferedImage image = createRGBImage(imageBytes, width, height);
+
                     display.setImage(image);
                 }
 

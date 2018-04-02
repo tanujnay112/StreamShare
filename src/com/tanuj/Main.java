@@ -1,9 +1,6 @@
 package com.tanuj;
 
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamMotionDetector;
-import com.github.sarxos.webcam.WebcamMotionEvent;
-import com.github.sarxos.webcam.WebcamMotionListener;
+import com.github.sarxos.webcam.*;
 import redis.clients.jedis.Jedis;
 
 import java.awt.*;
@@ -17,10 +14,11 @@ public class Main implements WebcamMotionListener {
   static Dimension length;
   static Webcam w;
 
-  public static void publish(byte[] b){
+  public static void publish(byte[] b, Dimension d){
     Jedis jedis = new Jedis(location);
-
-    jedis.publish(channelName, Base64.getEncoder().encodeToString(b));
+    String s = Base64.getEncoder().encodeToString(b);
+    s = String.format("%d;%d;%s", d.height, d.width, s);
+    jedis.publish(channelName, s);
   }
 
   public Main(){
@@ -34,6 +32,12 @@ public class Main implements WebcamMotionListener {
   public static void main(String[] args) {
     location = args[0];
     w = Webcam.getDefault();
+    Dimension[] nonStandardResolutions = new Dimension[] {
+        WebcamResolution.HD.getSize(),
+    };
+    w.setCustomViewSizes(nonStandardResolutions);
+    w.setViewSize(WebcamResolution.HD.getSize());
+
     System.out.println("STARTING");
     Main m = new Main();
     while(true){
@@ -44,12 +48,13 @@ public class Main implements WebcamMotionListener {
   public static void frameChange() {
     System.out.println("CHANGED");
     ByteBuffer bb = w.getImageBytes();
-    byte[] bytes = new byte[length.height*length.width];
+    System.out.printf("height: %d, width: %d\n", length.height, length.width);
+    byte[] bytes = new byte[length.height*length.width*3];
     synchronized(bb){
       bb.rewind();
       bb.get(bytes);
       bb.rewind();
-      publish(bytes);
+      publish(bytes, length);
     }
   }
 
