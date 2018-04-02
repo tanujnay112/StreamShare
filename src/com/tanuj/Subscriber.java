@@ -2,18 +2,13 @@ package com.tanuj;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Base64;
 
 public class Subscriber {
-    static final String address = "";
+    static final String address = "128.237.130.67";
     static final String channel = "slides";
 
     public static void main(String args[]) {
@@ -30,8 +25,12 @@ public class Subscriber {
                 @Override
                 public void onMessage(String channel, String message) {
                     super.onMessage(channel, message);
+                    int height = Integer.parseInt(message.substring(0, message.indexOf(";")));
+                    message = message.substring(message.indexOf(";")+1);
+                    int width = Integer.parseInt(message.substring(0, message.indexOf(";")));
+                    message = message.substring(message.indexOf(";")+1);
                     byte [] imageBytes = Base64.getDecoder().decode(message);
-                    BufferedImage image = createRGBImage(imageBytes, 640, 480);
+                    BufferedImage image = createRGBImage(imageBytes, width, height);
                     display.setImage(image);
                 }
 
@@ -63,6 +62,7 @@ public class Subscriber {
         DataBufferByte buffer = new DataBufferByte(bytes, bytes.length);
         ColorModel cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[]{8, 8, 8},
                 false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+        System.out.printf("Byte Length: %d", bytes.length);
         return new BufferedImage(cm, Raster.createInterleavedRaster(buffer, width, height, width * 3,
                 3, new int[]{0, 1, 2}, null), false, null);
     }
