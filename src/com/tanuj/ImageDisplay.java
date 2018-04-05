@@ -10,9 +10,9 @@ import java.nio.Buffer;
  */
 public class ImageDisplay extends JFrame{
   JLabel pic;
-  public ImageDisplay(){
+  public ImageDisplay(int width, int height){
     setLayout(new FlowLayout());
-    this.setSize(640,480);
+    this.setSize(width,height);
     pic = new JLabel();
     add(pic);
     this.setVisible(true);

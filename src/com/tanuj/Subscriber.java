@@ -20,7 +20,7 @@ public class Subscriber {
 
         Jedis jedis = new Jedis(address);
         System.out.println("Starting subscriber for channel " + channel);
-        final ImageDisplay display = new ImageDisplay();
+        final ImageDisplay display = new ImageDisplay(640, 480);
         while (true) {
             jedis.subscribe(new JedisPubSub() {
                 @Override

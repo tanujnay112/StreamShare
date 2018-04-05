@@ -4,6 +4,7 @@ import com.github.sarxos.webcam.*;
 import redis.clients.jedis.Jedis;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 
@@ -13,6 +14,9 @@ public class Main implements WebcamMotionListener {
   final static String channelName = "slides";
   static Dimension length;
   static Webcam w;
+
+  static ImageDisplay display;
+  final static boolean RELAY = true;
 
   public static void publish(byte[] b, Dimension d){
     Jedis jedis = new Jedis(location);
@@ -37,7 +41,10 @@ public class Main implements WebcamMotionListener {
     };
     w.setCustomViewSizes(nonStandardResolutions);
     w.setViewSize(WebcamResolution.HD.getSize());
-
+    length = w.getViewSize();
+    if(RELAY){
+      display = new ImageDisplay(length.width, length.height);
+    }
     System.out.println("STARTING");
     Main m = new Main();
     while(true){
@@ -50,6 +57,7 @@ public class Main implements WebcamMotionListener {
     ByteBuffer bb = w.getImageBytes();
     System.out.printf("height: %d, width: %d\n", length.height, length.width);
     byte[] bytes = new byte[length.height*length.width*3];
+    updateFrame(w.getImage());
     synchronized(bb){
       bb.rewind();
       bb.get(bytes);
@@ -61,5 +69,12 @@ public class Main implements WebcamMotionListener {
   public void motionDetected(WebcamMotionEvent webcamMotionEvent) {
     System.out.println("WHAT THE");
     frameChange();
+  }
+
+  private static void updateFrame(BufferedImage bytes){
+    if(!RELAY){
+      return;
+    }
+    display.setImage(bytes);
   }
 }
