@@ -26,11 +26,16 @@ public class Subscriber {
                 @Override
                 public void onMessage(String channel, String message) {
                     super.onMessage(channel, message);
-                    int height = Integer.parseInt(message.substring(0, message.indexOf(";")));
-                    message = message.substring(message.indexOf(";")+1);
-                    int width = Integer.parseInt(message.substring(0, message.indexOf(";")));
-                    message = message.substring(message.indexOf(";")+1);
-                    byte [] imageBytes = Base64.getDecoder().decode(message);
+
+                    String[] contents = message.split(";");
+                    int height = Integer.parseInt(contents[0]);
+                    int width = Integer.parseInt(contents[1]);
+                    byte [] imageBytes = Base64.getDecoder().decode(contents[2]) ;
+//                    int height = Integer.parseInt(message.substring(0, message.indexOf(";")));
+//                    message = message.substring(message.indexOf(";")+1);
+//                    int width = Integer.parseInt(message.substring(0, message.indexOf(";")));
+//                    message = message.substring(message.indexOf(";")+1);
+//                    byte [] imageBytes = Base64.getDecoder().decode(message);
                     BufferedImage image = createRGBImage(imageBytes, width, height);
 
                     display.setImage(image);
