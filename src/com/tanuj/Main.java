@@ -12,10 +12,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Main extends JApplet implements WebcamMotionListener {
 
@@ -26,9 +22,6 @@ public class Main extends JApplet implements WebcamMotionListener {
 
   static WebcamPanel display;
   final static boolean RELAY = false;
-
-  static BlockingQueue queue;
-  static ExecutorService threadPool;
 
   public static void publish(String s){
     Jedis jedis = new Jedis(location);
@@ -48,13 +41,7 @@ public class Main extends JApplet implements WebcamMotionListener {
     length = w.getViewSize();
   }
 
-
   public static void main(String[] args) {
-
-    queue = new ArrayBlockingQueue(2);
-
-    threadPool = Executors.newFixedThreadPool(2);
-
     location = args[0];
     w = Webcam.getDefault();
     Dimension[] nonStandardResolutions = new Dimension[] {
@@ -117,11 +104,7 @@ public class Main extends JApplet implements WebcamMotionListener {
 
   public void motionDetected(WebcamMotionEvent webcamMotionEvent) {
     System.out.println("WHAT THE");
-    threadPool.submit(new Runnable() {
-      public void run() {
-        frameChange(w.getImage());
-      }
-    });
+    frameChange(w.getImage());
   }
 
   private static void updateFrame(BufferedImage bytes){
