@@ -11,8 +11,7 @@ public class Subscriber {
     static String address;
     static final String channel = "slides";
 
-    public static void main(String args[]) {
-        address = args[0];
+    public Subscriber(String address) {
         /*Jedis jedis = new Jedis("localhost");
         Scanner scanner = new Scanner(System.in);
         System.out.printf("Enter the channel name:");
@@ -21,7 +20,6 @@ public class Subscriber {
         Jedis jedis = new Jedis(address);
         System.out.println("Starting subscriber for channel " + channel);
         final ImageDisplay display = new ImageDisplay(640, 480);
-        while (true) {
             jedis.subscribe(new JedisPubSub() {
                 @Override
                 public void onMessage(String channel, String message) {
@@ -62,6 +60,8 @@ public class Subscriber {
                 }
 
             }, channel);
+        while (true) {
+
         }
     }
 

@@ -1,5 +1,8 @@
 package com.tanuj;
 
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamPanel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,6 +18,15 @@ public class ImageDisplay extends JFrame{
     this.setSize(width,height);
     pic = new JLabel();
     add(pic);
+    this.setVisible(true);
+  }
+
+  public ImageDisplay(int width, int height, Webcam w){
+    setLayout(new FlowLayout());
+    this.setSize(width, height);
+    WebcamPanel view = new WebcamPanel(w, false);
+    add(view);
+    view.start();
     this.setVisible(true);
   }
 
