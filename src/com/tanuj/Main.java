@@ -24,6 +24,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main extends JApplet implements WebcamMotionListener {
+    static String location = "";
+    final static String channelName = "slides";
+    static Dimension length;
+    static Webcam w;
+
+    static WebcamPanel display;
+    final static boolean RELAY = false;
+
 
   static String location = "";
   final static String channelName = "slides";
@@ -64,27 +72,20 @@ public class Main extends JApplet implements WebcamMotionListener {
 
     location = args[0];
     w = Webcam.getDefault();
-    Dimension[] nonStandardResolutions = new Dimension[] {
-        WebcamResolution.HD.getSize(),
-    };
+    Dimension[] nonStandardResolutions =
+        new Dimension[] { WebcamResolution.HD.getSize(), };
     w.setCustomViewSizes(nonStandardResolutions);
     w.setViewSize(WebcamResolution.HD.getSize());
     length = w.getViewSize();
-    if(RELAY){
+    if (RELAY) {
       display = new WebcamPanel(w, false);
       ImageDisplay disp = new ImageDisplay(length.width, length.height, w);
     }
-    System.out.println("STARTING");
-    Main m = new Main();
-    while(true){
-
-    }
   }
 
-  public void frameChange(BufferedImage image) {
+    public void frameChange(BufferedImage image) {
 
-    //LOG.info("New image from {}", webcam);
-
+        //LOG.info("New image from {}", webcam);
 
     System.out.println("hello");
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -112,13 +113,12 @@ public class Main extends JApplet implements WebcamMotionListener {
       //LOG.error(e.getMessage(), e);
       e.printStackTrace();
     }
-
-    String base64 = null;
-    try {
-      base64 = new String(Base64.getEncoder().encode(baos.toByteArray()), "UTF8");
-    } catch (UnsupportedEncodingException e) {
-      //LOG.error(e.getMessage(), e);
-    }
+        String base64 = null;
+        try {
+          base64 = new String(Base64.getEncoder().encode(baos.toByteArray()), "UTF8");
+        } catch (UnsupportedEncodingException e) {
+          //LOG.error(e.getMessage(), e);
+        }
 
     //Map<String, Object> message = new HashMap<String, Object>();
     //message.put("type", "image");
@@ -134,8 +134,7 @@ public class Main extends JApplet implements WebcamMotionListener {
     //publish(finalBase6);
   }
 
-
-  /*public static void frameChange() {
+    /*public static void frameChange() {
     System.out.println("CHANGED");
     ByteBuffer bb = w.getImageBytes();
     System.out.printf("height: %d, width: %d\n", length.height, length.width);
@@ -147,7 +146,7 @@ public class Main extends JApplet implements WebcamMotionListener {
       bb.rewind();
       publish(bytes, length);
     }
-  }*/
+    }*/
 
   public void motionDetected(WebcamMotionEvent webcamMotionEvent) {
     System.out.println("WHAT THE");
@@ -158,11 +157,10 @@ public class Main extends JApplet implements WebcamMotionListener {
     });
     //frameChange(w.getImage());
   }
-
-  private static void updateFrame(BufferedImage bytes){
-    if(!RELAY){
-      return;
+    private static void updateFrame(BufferedImage bytes){
+        if(!RELAY){
+            return;
+        }
+        //display.setImage(bytes);
     }
-    //display.setImage(bytes);
-  }
 }
