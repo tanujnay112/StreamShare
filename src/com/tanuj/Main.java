@@ -24,13 +24,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main extends JApplet implements WebcamMotionListener {
-    static String location = "";
-    final static String channelName = "slides";
-    static Dimension length;
-    static Webcam w;
-
-    static WebcamPanel display;
-    final static boolean RELAY = false;
 
 
   static String location = "";
@@ -80,6 +73,10 @@ public class Main extends JApplet implements WebcamMotionListener {
     if (RELAY) {
       display = new WebcamPanel(w, false);
       ImageDisplay disp = new ImageDisplay(length.width, length.height, w);
+    }
+    Main m = new Main();
+    while(true){
+
     }
   }
 
