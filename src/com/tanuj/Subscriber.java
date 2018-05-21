@@ -60,6 +60,7 @@ public class Subscriber {
                 }
 
             }, channel);
+
         while (true) {
 
         }
