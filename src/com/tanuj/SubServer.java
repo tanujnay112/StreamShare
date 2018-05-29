@@ -1,5 +1,6 @@
 package com.tanuj;
 
+import org.apache.hadoop.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -7,9 +8,12 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Created by Tanuj on 5/19/18.
@@ -19,10 +23,22 @@ public class SubServer extends WebSocketServer {
     static LinkedList<WebSocket> conns;
     static String jedisAdd;
 
+    static Map<Integer, String> images;
+
+    static Integer currentTime = -1;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    static class Message{
+      int time;
+      String image;
+    }
+
     public SubServer(InetSocketAddress add, String jedisAdd){
         super(add);
         this.jedisAdd = jedisAdd;
         conns = new LinkedList<WebSocket>();
+        images = new HashMap<Integer, String>();
         //Subscriber s = new Subscriber(jedisAdd);
         Thread sub = new Thread(new SubThread());
         sub.start();
@@ -40,17 +56,17 @@ public class SubServer extends WebSocketServer {
             public void onMessage(String channel, String message) {
                 super.onMessage(channel, message);
                 System.out.println("Got message");
-                //String[] contents = message.split(";");
-                //int height = Integer.parseInt(contents[0]);
-                //int width = Integer.parseInt(contents[1]);
-                //byte [] imageBytes = Base64.getDecoder().decode(contents[2]) ;
-                //                    int height = Integer.parseInt(message.substring(0, message.indexOf(";")));
-                //                    message = message.substring(message.indexOf(";")+1);
-                //                    int width = Integer.parseInt(message.substring(0, message.indexOf(";")));
-                //                    message = message.substring(message.indexOf(";")+1);
-                //                    byte [] imageBytes = Base64.getDecoder().decode(message);
-
-                broadcastBytes(message);
+              try {
+                Message m = MAPPER.readValue(message, Message.class);
+                images.put(m.time, m.image);
+                synchronized (currentTime) {
+                  if(currentTime < m.time)
+                    currentTime = m.time;
+                }
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+              broadcastBytes(message);
             }
 
             private void broadcastBytes(String imageBytes) {
@@ -89,6 +105,7 @@ public class SubServer extends WebSocketServer {
         //broadcast("some guy connected");
         System.out.println("got connection");
         conns.add(webSocket);
+        synchronize(webSocket, -1, currentTime+1);
     }
 
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
@@ -99,7 +116,19 @@ public class SubServer extends WebSocketServer {
     }
 
     public void onMessage(WebSocket webSocket, String s) {
+        String[] stuff = s.split(";");
+        int lastSeen = Integer.parseInt(stuff[0]);
+        int upTill = Integer.parseInt(stuff[1]);
+        if(lastSeen < 0){
+         lastSeen = -1;
+        }
+        synchronize(webSocket, lastSeen, upTill);
+    }
 
+    void synchronize(WebSocket webSocket, int last, int till){
+      for(int i = last+1;i < till;i++){
+        webSocket.send(images.get(i));
+      }
     }
 
     public void onError(WebSocket webSocket, Exception e) {

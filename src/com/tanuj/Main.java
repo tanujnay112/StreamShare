@@ -1,6 +1,8 @@
 package com.tanuj;
 
 import com.github.sarxos.webcam.*;
+import org.apache.hadoop.shaded.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.hadoop.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import redis.clients.jedis.Jedis;
 
 import javax.imageio.IIOImage;
@@ -16,15 +18,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main extends JApplet implements WebcamMotionListener {
-
 
   static String location = "";
   final static String channelName = "slides";
@@ -37,7 +37,11 @@ public class Main extends JApplet implements WebcamMotionListener {
   static BlockingQueue queue;
   static ExecutorService threadPool;
 
-  public static void publish(String s){
+  static int timestamp = 0;
+
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  public static void publish(String s) {
     Jedis jedis = new Jedis(location);
     //String s = Base64.getEncoder().encodeToString(b);
     //System.out.println(s);
@@ -47,7 +51,7 @@ public class Main extends JApplet implements WebcamMotionListener {
     jedis.publish(channelName, s);
   }
 
-  public Main(){
+  public Main() {
     WebcamMotionDetector detector = new WebcamMotionDetector(w);
     detector.setInterval(100);
     detector.addMotionListener(this);
@@ -56,10 +60,7 @@ public class Main extends JApplet implements WebcamMotionListener {
     length = w.getViewSize();
   }
 
-
   public static void main(String[] args) {
-
-    queue = new ArrayBlockingQueue(2);
 
     threadPool = Executors.newFixedThreadPool(2);
 
@@ -75,16 +76,15 @@ public class Main extends JApplet implements WebcamMotionListener {
       ImageDisplay disp = new ImageDisplay(length.width, length.height, w);
     }
     Main m = new Main();
-    while(true){
+    while (true) {
 
     }
   }
 
-    public void frameChange(BufferedImage image) {
+  public void frameChange(int time, BufferedImage image) {
 
-        //LOG.info("New image from {}", webcam);
+    //LOG.info("New image from {}", webcam);
 
-    System.out.println("hello");
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     try {
@@ -92,17 +92,16 @@ public class Main extends JApplet implements WebcamMotionListener {
       //might be an issue
       Iterator<ImageWriter> writers =
           ImageIO.getImageWritersByFormatName("jpg");
-      if(!writers.hasNext()){
+      if (!writers.hasNext()) {
         System.out.println("NO WRITERS");
       }
-      ImageWriter writer = (ImageWriter)
-          ImageIO.getImageWritersByFormatName("jpg").next();
+      ImageWriter writer =
+          (ImageWriter) ImageIO.getImageWritersByFormatName("jpg").next();
       writer.setOutput(ios);
       ImageWriteParam param = writer.getDefaultWriteParam();
       param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
       param.setCompressionQuality(0.7f);
-      writer.write(null,
-          new IIOImage(image, null, null), param);
+      writer.write(null, new IIOImage(image, null, null), param);
       ios.close();
       baos.close();
       writer.dispose();
@@ -110,54 +109,55 @@ public class Main extends JApplet implements WebcamMotionListener {
       //LOG.error(e.getMessage(), e);
       e.printStackTrace();
     }
-        String base64 = null;
-        try {
-          base64 = new String(Base64.getEncoder().encode(baos.toByteArray()), "UTF8");
-        } catch (UnsupportedEncodingException e) {
-          //LOG.error(e.getMessage(), e);
-        }
+    String base64 = null;
+    try {
+      base64 =
+          new String(Base64.getEncoder().encode(baos.toByteArray()), "UTF8");
+    } catch (UnsupportedEncodingException e) {
+      //LOG.error(e.getMessage(), e);
+    }
 
     //Map<String, Object> message = new HashMap<String, Object>();
     //message.put("type", "image");
     //message.put("webcam", webcam.getName());
     //message.put("image", base64);
     System.out.println("Before submit");
-    final String finalBase6 = base64;
+    Map<String, Object> m = new LinkedHashMap<String, Object>();
+    m.put("time", time);
+    m.put("image", base64);
+    String message = null;
+    try {
+      message = MAPPER.writeValueAsString(m);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+    final String finalMessage = message;
     threadPool.submit(new Runnable() {
       public void run() {
-        publish(finalBase6);
+        publish(finalMessage);
       }
     });
     //publish(finalBase6);
   }
 
-    /*public static void frameChange() {
-    System.out.println("CHANGED");
-    ByteBuffer bb = w.getImageBytes();
-    System.out.printf("height: %d, width: %d\n", length.height, length.width);
-    byte[] bytes = new byte[length.height*length.width*3];
-    updateFrame(w.getImage());
-    synchronized(bb){
-      bb.rewind();
-      bb.get(bytes);
-      bb.rewind();
-      publish(bytes, length);
-    }
-    }*/
+  static synchronized int increaseTime() {
+    return ++timestamp;
+  }
 
   public void motionDetected(WebcamMotionEvent webcamMotionEvent) {
-    System.out.println("WHAT THE");
+    System.out.println("Motion detected");
     threadPool.submit(new Runnable() {
       public void run() {
-        frameChange(w.getImage());
+        frameChange(increaseTime(), w.getImage());
       }
     });
     //frameChange(w.getImage());
   }
-    private static void updateFrame(BufferedImage bytes){
-        if(!RELAY){
-            return;
-        }
-        //display.setImage(bytes);
+
+  private static void updateFrame(BufferedImage bytes) {
+    if (!RELAY) {
+      return;
     }
+    //display.setImage(bytes);
+  }
 }
