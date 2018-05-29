@@ -1,6 +1,5 @@
 package com.tanuj;
 
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
