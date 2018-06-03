@@ -1,5 +1,6 @@
 package com.tanuj;
 
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -40,6 +41,8 @@ public class SubServer extends WebSocketServer {
         conns = new LinkedList<WebSocket>();
         images = new HashMap<Integer, String>();
         //Subscriber s = new Subscriber(jedisAdd);
+        MAPPER.configure(DeserializationConfig.Feature
+            .FAIL_ON_UNKNOWN_PROPERTIES, false);
         Thread sub = new Thread(new SubThread());
         sub.start();
         System.out.println("Not Blocking");
