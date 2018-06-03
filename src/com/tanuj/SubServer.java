@@ -30,9 +30,27 @@ public class SubServer extends WebSocketServer {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    static class Message{
+    public static class Message{
+      public int getTime() {
+        return time;
+      }
+
+      public void setTime(int time) {
+        this.time = time;
+      }
+
+      public String getImage() {
+        return image;
+      }
+
+      public void setImage(String image) {
+        this.image = image;
+      }
+
       int time;
       String image;
+
+
     }
 
     public SubServer(InetSocketAddress add, String jedisAdd){
@@ -41,8 +59,8 @@ public class SubServer extends WebSocketServer {
         conns = new LinkedList<WebSocket>();
         images = new HashMap<Integer, String>();
         //Subscriber s = new Subscriber(jedisAdd);
-        MAPPER.configure(DeserializationConfig.Feature
-            .FAIL_ON_UNKNOWN_PROPERTIES, false);
+        /*MAPPER.configure(DeserializationConfig.Feature
+            .FAIL_ON_UNKNOWN_PROPERTIES, false);*/
         Thread sub = new Thread(new SubThread());
         sub.start();
         System.out.println("Not Blocking");
@@ -62,6 +80,8 @@ public class SubServer extends WebSocketServer {
               try {
                 Message m = MAPPER.readValue(message, Message.class);
                 images.put(m.time, m.image);
+                System.out.println(m.image);
+                System.out.println(m.time);
                 synchronized (currentTime) {
                   if(currentTime < m.time)
                     currentTime = m.time;
