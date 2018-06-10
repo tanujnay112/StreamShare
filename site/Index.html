@@ -3,11 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/paper-core.js"></script>
+    <script src="js/paper-core.min.js"></script>
+    <script src="js/paper-full.js"></script>
+    <script src="js/paper-full.min.js"></script>
+    <link href="css/image-markup.css" rel="stylesheet">
+    <link href="contextMenu/jquery.contextMenu.css" rel="stylesheet">
 </head>
 <body>
-    <img id="Frame" src="data:image/png;base64,/9j/9j/9j/9j/9j"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <div id="FrameContainer">
+        <img id="Frame" src="data:image/png;base64,/9j/9j/9j/9j/9j" width="1280" height="720"/>
+    </div>
+
+    <script src="js/CommandManager.js"></script>
+    <script src="contextMenu/jquery.contextMenu.js"></script>
+    <script src="contextMenu/jquery.ui.position.js"></script>
+    <script src="js/image-markup.js"></script>
     <script src="js/script.js"></script>
+
+    <script type="text/javascript">
+        var markup = $('#Frame').imageMarkup();
+    </script>
 
 </body>
 </html>

@@ -58,9 +58,6 @@ public class SubServer extends WebSocketServer {
         this.jedisAdd = jedisAdd;
         conns = new LinkedList<WebSocket>();
         images = new HashMap<Integer, String>();
-        //Subscriber s = new Subscriber(jedisAdd);
-        /*MAPPER.configure(DeserializationConfig.Feature
-            .FAIL_ON_UNKNOWN_PROPERTIES, false);*/
         Thread sub = new Thread(new SubThread());
         sub.start();
         System.out.println("Not Blocking");
@@ -128,7 +125,7 @@ public class SubServer extends WebSocketServer {
         //broadcast("some guy connected");
         System.out.println("got connection");
         conns.add(webSocket);
-        synchronize(webSocket, -1, currentTime+1);
+        //synchronize(webSocket, -1, currentTime+1);
     }
 
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
@@ -145,14 +142,14 @@ public class SubServer extends WebSocketServer {
         if(lastSeen < 0){
          lastSeen = -1;
         }
-        synchronize(webSocket, lastSeen, upTill);
+        //synchronize(webSocket, lastSeen, upTill);
     }
 
-    void synchronize(WebSocket webSocket, int last, int till){
+    /*void synchronize(WebSocket webSocket, int last, int till){
       for(int i = last+1;i < till;i++){
         webSocket.send(images.get(i));
       }
-    }
+    }*/
 
     public void onError(WebSocket webSocket, Exception e) {
         System.out.println("what the");

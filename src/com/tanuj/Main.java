@@ -130,8 +130,10 @@ public class Main extends JApplet implements WebcamMotionListener {
           message = MAPPER.writeValueAsString(m);
         } catch (JsonProcessingException e) {
           e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-        final String finalMessage = message;
+      final String finalMessage = message;
         threadPool.submit(new Runnable() {
           public void run() {
             publish(finalMessage);
