@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sample of Using annocanvas.js</title>  
+
+ 
+  <link rel="stylesheet" type="text/css" href="css/annocan.css"/><!-- notice: css is compiled from less -->
+  <link href="contextMenu/jquery.contextMenu.css" type="text/css" rel="stylesheet"/>
+</head>
+<body onload="initDrawstuff()">
+	
+	<div id="annocanvas01" style="float:left; position: relative;">
+		<!--<canvas id="background" width="960" height=-->
+		<canvas id="annocanvas01_canvas" width="960" height="854" class="canvas_canvas">
+			Sorry. Canvas is not supported by your browser...
+		</canvas>
+	</div>
+	
+	<input type="button" id="right" value="next picture" onclick="moveRight()" disabled="true"></input>
+	<input type="button" id="left" value="previous picture" onclick="moveLeft()" disabled="true"></input>
+	<input type="button" id="download" value="download" onclick="downloadPDF()"></input>
+<div style="float:left">
+
+</div>
+  <script src="js/jquery-1.9.1.min.js" type="text/javascript"></script>
+  <script src="js/jquery.annocan.js" type="text/javascript"></script>
+  <script src="js/annocan.js" type="text/javascript"></script>
+  <script src="js/dummy_image.js" type="text/javascript"></script>
+  
+  <script src="contextMenu/jquery.contextMenu.js" type="text/javascript"></script>  
+  <script src="contextMenu/jquery.ui.position.js" type="text/javascript"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js" integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs" crossorigin="anonymous"></script>
+  <script src="js/script.js" type="text/javascript"></script>
+  <script>
+   var r2;
+  	
+  	function initDrawstuff() {
+  		var bkg = new Image();
+  		//bkg.src = "xyz.jpg"; //temporary changed to load base64 directly to avoid security errors when running locally
+		  bkg.src = getDummy(); //base64 content loaded from dummy_image.js
+		  bkg.addEventListener('load', function(){
+
+			r2=new RoCanvas;
+			r2.RO("annocanvas01_canvas", {
+				"toolbar": {
+				  colors: ["#FFF","#000","#FF0000","#00FF00","#0000FF","#FFFF00","#00FFFF"],
+				  custom_color: false,
+					//tools: ['ellipse', 'path', 'circle', 'rectangle', 'arrow', 'textbox'],
+					sizes: [3,6,10],		
+					clearButton : {"text":"Clear"},	
+					saveButton: null
+				},
+				"settings": {
+					color: 'blue',
+					lineWidth : "6",
+          tool: 'arrow'
+				}, 
+				"backgroundImage" : bkg,
+        "cssScale" : 2.0
+			});
+		});
+		initMenu();
+	   	
+	}
+
+	function setText(){
+		CanvasInstances['annocanvas01_canvas'].setTool('textbox');
+	}
+
+	function setColor(x){
+		CanvasInstances['annocanvas01_canvas'].setColor(x);
+	}
+
+	function undo(){
+		CanvasInstances['annocanvas01_canvas'].undo();
+	}
+
+	function redo(){
+		CanvasInstances['annocanvas01_canvas'].redo();
+	}
+
+	function initMenu(){
+		$.contextMenu({
+            selector: '.canvas_canvas',
+            callback: function (key, options) {
+                switch (key) {
+                    //COMMANDS
+                    case 'undo':
+                        undo();
+                        break;
+                    case 'redo':
+                        redo();
+                        break;
+                    case 'erase':
+                        self.erase();
+                        break;
+                    case 'download':
+                        self.download();
+                        break;
+                        //TOOLS
+                    case 'text':
+                        self.setText();
+                        break;
+                        //PENS
+                    case 'blackPen':
+                        setColor('#000');
+                        break;
+                    case 'redPen':
+                        setColor('#FF0000');
+                        break;
+                    case 'greenPen':
+                        setColor('#00FF00');
+                        break;
+                    case 'bluePen':
+                        setColor('#FFFF00');
+                        break;
+                    case 'yellowPen':
+                        setColor('#00FFFF');
+                        break;
+                }
+            },
+            items: {
+                "undo": { name: "Undo", icon: "undo" },
+                "redo": { name: "Redo", icon: "redo" },
+                "erase": { name: "Erase", icon: "erase" },
+                "download": { name: "Download", icon: "download" },
+                "sep1": "---------",
+                "text": { name: "Text", icon: "text" },
+                "sep2": "---------",
+                "blackPen": { name: "Black Pen", icon: "img/blackpen" },
+                "redPen": { name: "Red Pen", icon: "img/redpen" },
+                "greenPen": { name: "Green Pen", icon: "img/greenpen" },
+                "bluePen": { name: "Blue Pen", icon: "img/bluepen" },
+                "yellowPen": { name: "Yellow Pen", icon: "img/yellowpen" },
+            }
+        });
+	}
+
+	function testSave(instance)
+	{		
+    
+    document.getElementById("txt").value = document.getElementById("annocanvas01_canvas").toDataURL("image/jpeg");
+	  // send ajax request to some URL using the data
+	  // to do...
+
+	}
+
+
+  </script>
+</body>
+</html>

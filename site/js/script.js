@@ -17,7 +17,7 @@ sock.onmessage = function (event) {
     var data = JSON.parse(event.data);
     var time = data.time;
     var base64 = data.image;
-    setTimeImage(time, "data:image/png;base64,"+base64);  
+    setTimeImage(time, "data:image/jpg;base64,"+base64);  
     notifyUpdate(time, time);
 }
 
@@ -41,7 +41,7 @@ function notifyUpdate(a, b){
 function downloadPDF(){
     var doc = new jsPDF('l','px',[1280,720]);
     for(var i = lowerBound;i <= upperBound;i++){
-        doc.addImage(getTimeImage(i), "PNG", 0,0, 1280, 720);
+        doc.addImage(getTimeImage(i), "JPG", 0,0, 1280, 720);
         if(i < upperBound){
             doc.addPage();
         }
@@ -71,7 +71,7 @@ function moveRight(){
     newTime = currentTime + 1;
     im.src = getTimeImage(newTime);
     var base64 = $("#annocanvas01_canvas")[0].toDataURL();
-    //setTimeImage(currentTime, base64);
+    setTimeImage(currentTime, base64);
     currentTime = newTime;
     im.onload = function (){
         $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
