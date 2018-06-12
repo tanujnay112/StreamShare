@@ -521,6 +521,7 @@ var RoCanvas= function () {
 	/**/
 
 	this.restartState = function() {
+		self.context.clearRect(0,0,self.canvas.width,self.canvas.height);
 		self.currentBgImage.src = self.canvas.toDataURL();
 		self.redoStack = [];
 		self.undoStack = [];

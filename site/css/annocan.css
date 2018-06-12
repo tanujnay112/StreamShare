@@ -143,9 +143,9 @@
 #tegneCanvas .canvas_canvas {
   float: right;
   border: solid 1px black;
-  margin: 10px;
+  /*margin: 10px;
   height: 427px;
-  width: 480px;
+  width: 480px;*/
   /* down-scaling hi-res 1188/891 image */
 
 }

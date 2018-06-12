@@ -30,7 +30,8 @@ function notifyUpdate(a, b){
             //enable next button and move along if keeping up
             $('#right')[0].disabled = false;
             if(synched){
-                moveRight();
+                //moveRight();
+                CanvasInstances["annocanvas01_canvas"].restartState();
             }
         }
     }
@@ -50,7 +51,7 @@ function downloadPDF(){
 }
 
 function moveLeft(){
-    var im = new Image();
+    var im = $("#background")[0];
     newTime = currentTime - 1;
     im.src = getTimeImage(newTime);
     var base64 = $("#annocanvas01_canvas")[0].toDataURL();
@@ -89,7 +90,8 @@ function getTimeImage(x){
 
 function setTimeImage(x, src){
     console.log("Storing at " + x);
-    sessionStorage.setItem(x, serializeSrc(src));
+    //sessionStorage.setItem(x, serializeSrc(src));
+    $("#background")[0].src = src;
 }
 
 function serializeSrc(x){
