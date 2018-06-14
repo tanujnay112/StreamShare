@@ -125,6 +125,7 @@ public class Main extends JApplet implements WebcamMotionListener {
         Map<String, Object> m = new LinkedHashMap<String, Object>();
         m.put("time", time);
         m.put("image", base64);
+        m.put("command", 0);
         String message = null;
         try {
           message = MAPPER.writeValueAsString(m);

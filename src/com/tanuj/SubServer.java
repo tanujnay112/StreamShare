@@ -48,7 +48,27 @@ public class SubServer extends WebSocketServer {
       }
 
       int time;
+
+      public String getParams() {
+        return params;
+      }
+
+      public void setParams(String params) {
+        this.params = params;
+      }
+
+      String params;
       String image;
+
+      public int getCommand() {
+        return command;
+      }
+
+      public void setCommand(int command) {
+        this.command = command;
+      }
+
+      int command;
 
 
     }
@@ -136,13 +156,20 @@ public class SubServer extends WebSocketServer {
     }
 
     public void onMessage(WebSocket webSocket, String s) {
-        String[] stuff = s.split(";");
-        int lastSeen = Integer.parseInt(stuff[0]);
-        int upTill = Integer.parseInt(stuff[1]);
-        if(lastSeen < 0){
-         lastSeen = -1;
+      try {
+        Message m = MAPPER.readValue(s, Message.class);
+        if(m.command == 0){
+          int request = Integer.parseInt(m.params);
+          sendImage(webSocket, request);
         }
-        //synchronize(webSocket, lastSeen, upTill);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      //synchronize(webSocket, lastSeen, upTill);
+    }
+
+    private void sendImage(WebSocket webSocket, int request) {
+      webSocket.send(images.get(request));
     }
 
     /*void synchronize(WebSocket webSocket, int last, int till){
