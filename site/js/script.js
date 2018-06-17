@@ -4,6 +4,8 @@ var currentTime = 0;
 var synched = true;
 var lowerBound = 1;
 var upperBound = 0;
+var slideno = 0;
+var catchingUp = false;
 
 
 sock.onopen = function (event) {
@@ -16,8 +18,24 @@ sock.onmessage = function (event) {
     var image = new Image();
     var data = JSON.parse(event.data);
     var time = data.time;
+    var command = data.command;
     var base64 = data.image;
-    setTimeImage(time, "data:image/jpg;base64,"+base64);  
+    if(catchingUp && time == currentTime){
+        setTimeImage("data:image/jpg;base64,"+base64);
+        slideno = time;
+        catchingUp = false;
+    }
+    if(!synched && command == 1){
+        setTimeImage("data:image/jpg;base64,"+base64);
+        slideno = time;
+    }
+    if(synched && command == 0){
+        setTimeImage("data:image/jpg;base64,"+base64);
+        slideno = time;
+        currentTime = time;
+        $('#left')[0].disabled = false;
+        $('#right')[0].disabled = true;
+    }
     notifyUpdate(time, time);
 }
 
@@ -52,16 +70,17 @@ function downloadPDF(){
 
 function moveLeft(){
     var im = $("#background")[0];
-    newTime = currentTime - 1;
+    newTime = slideno - 1;
     im.src = getTimeImage(newTime);
-    var base64 = $("#annocanvas01_canvas")[0].toDataURL();
-    setTimeImage(currentTime, base64);
+    getRemoteImage(newTime);
+    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/jpg");
+    storeImage(slideno, base64);
     im.onload = function(){
         $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
         CanvasInstances["annocanvas01_canvas"].restartState();
     }
-    currentTime = newTime;
-    if(currentTime == lowerBound){
+    slideno = newTime;
+    if(slideno == lowerBound){
         $('#left')[0].disabled = true;
     }
     $('#right')[0].disabled = false;
@@ -69,16 +88,17 @@ function moveLeft(){
 
 function moveRight(){
     var im = new Image();
-    newTime = currentTime + 1;
+    newTime = slideno + 1;
     im.src = getTimeImage(newTime);
-    var base64 = $("#annocanvas01_canvas")[0].toDataURL();
-    setTimeImage(currentTime, base64);
-    currentTime = newTime;
+    getRemoteImage(newTime);
+    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/jpg");
+    storeImage(slideno, base64);
+    slideno = newTime;
     im.onload = function (){
         $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
         CanvasInstances["annocanvas01_canvas"].restartState();
     }
-    if(currentTime == upperBound){
+    if(slideno == upperBound){
         $('#right')[0].disabled = true;
     }
     $('#left')[0].disabled = false;
@@ -88,13 +108,41 @@ function getTimeImage(x){
     return sessionStorage.getItem(x);
 }
 
-function setTimeImage(x, src){
-    console.log("Storing at " + x);
+function setTimeImage(src){
+    //console.log("Storing at " + x);
     //sessionStorage.setItem(x, serializeSrc(src));
     $("#background")[0].src = src;
+}
+
+function storeImage(x, src){
+    sessionStorage.setItem(x, serializeSrc(src));
 }
 
 function serializeSrc(x){
     //return x.replace(/^data:image\/(png|jpg);base64,/, "");
     return x;
+}
+
+function toggleSync(){
+    var but = $("#sync")[0];
+    if(synched){
+        synched = false;
+        but.value = "Not Synched";
+    }else{
+        synched = true;
+        catchUp();
+        but.value = "Synched";
+    }
+}
+
+function getRemoteImage(x){
+    var data = {command: 1, time: x};
+    var str = JSON.stringify(data);
+    sock.send(str);
+}
+
+function catchUp(){
+    catchingUp = true;
+    synched = true;
+    getRemoteImage(currentTime);
 }

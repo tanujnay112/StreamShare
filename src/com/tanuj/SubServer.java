@@ -49,15 +49,6 @@ public class SubServer extends WebSocketServer {
 
       int time;
 
-      public String getParams() {
-        return params;
-      }
-
-      public void setParams(String params) {
-        this.params = params;
-      }
-
-      String params;
       String image;
 
       public int getCommand() {
@@ -69,8 +60,6 @@ public class SubServer extends WebSocketServer {
       }
 
       int command;
-
-
     }
 
     public SubServer(InetSocketAddress add, String jedisAdd){
@@ -158,8 +147,8 @@ public class SubServer extends WebSocketServer {
     public void onMessage(WebSocket webSocket, String s) {
       try {
         Message m = MAPPER.readValue(s, Message.class);
-        if(m.command == 0){
-          int request = Integer.parseInt(m.params);
+        if(m.command == 1){
+          int request = m.time;
           sendImage(webSocket, request);
         }
       } catch (IOException e) {
@@ -169,7 +158,16 @@ public class SubServer extends WebSocketServer {
     }
 
     private void sendImage(WebSocket webSocket, int request) {
-      webSocket.send(images.get(request));
+      Message m = new Message();
+      m.command = 1;
+      m.time = request;
+      m.image = images.get(request);
+      try {
+        webSocket.send(MAPPER.writeValueAsString(m));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      System.out.println("Should've sent " + String.valueOf(request));
     }
 
     /*void synchronize(WebSocket webSocket, int last, int till){
