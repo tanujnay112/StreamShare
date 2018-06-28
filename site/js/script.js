@@ -1,4 +1,5 @@
 var sock = new WebSocket("ws://localhost:9456");
+var spillover = new WebSocket("ws://localhost:8022");
 
 var currentTime = 0;
 var synched = true;
@@ -6,10 +7,27 @@ var lowerBound = 1;
 var upperBound = 0;
 var slideno = 0;
 var catchingUp = false;
+var gotFirst = false;
 
+spillover.onmessage = function (event) {
+    var message = JSON.parse(event.data);
+    if(message.time != slideno){
+        return;
+    }
+    //SLIDENO MIGHT CHANGE HERE RACE CONDITION!!!
+    if(message.image == null){
+        return;
+    }
+    var im = new Image();
+    im.src = message.image;
+    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/jpeg");
+    im.onload = function (){
+        CanvasInstances["annocanvas01_canvas"].restartState();
+        $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
+    }
+}
 
 sock.onopen = function (event) {
-
 }
 
 sock.onmessage = function (event) {
@@ -20,17 +38,25 @@ sock.onmessage = function (event) {
     var time = data.time;
     var command = data.command;
     var base64 = data.image;
+    if(!gotFirst){
+        gotFirst = true;
+        setTimeImage("data:image/jpeg;base64,"+base64);
+        slideno = time;
+        currentTime = time;
+    }
     if(catchingUp && time == currentTime){
-        setTimeImage("data:image/jpg;base64,"+base64);
+        setTimeImage("data:image/jpeg;base64,"+base64);
         slideno = time;
         catchingUp = false;
     }
     if(!synched && command == 1){
-        setTimeImage("data:image/jpg;base64,"+base64);
+        setTimeImage("data:image/jpeg;base64,"+base64);
         slideno = time;
     }
     if(synched && command == 0){
-        setTimeImage("data:image/jpg;base64,"+base64);
+        setTimeImage("data:image/jpeg;base64,"+base64);
+        var base64s = $("#annocanvas01_canvas")[0].toDataURL("image/jpeg");
+        storeImage(slideno, base64s);
         slideno = time;
         currentTime = time;
         $('#left')[0].disabled = false;
@@ -40,11 +66,11 @@ sock.onmessage = function (event) {
 }
 
 function notifyUpdate(a, b){
-    if(b < lowerBound){
+    if(a > lowerBound){
         //enable prev button
         $('#left')[0].disabled = false;
     }else{
-        if(a > upperBound){
+        if(b < upperBound){
             //enable next button and move along if keeping up
             $('#right')[0].disabled = false;
             if(synched){
@@ -69,35 +95,40 @@ function downloadPDF(){
 }
 
 function moveLeft(){
-    var im = $("#background")[0];
+    //var im = new Image();
     newTime = slideno - 1;
-    im.src = getTimeImage(newTime);
+    //im.src = getTimeImage(newTime);
     getRemoteImage(newTime);
-    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/jpg");
+    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/png");
     storeImage(slideno, base64);
-    im.onload = function(){
-        $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
+    /*im.onload = function(){
         CanvasInstances["annocanvas01_canvas"].restartState();
-    }
+        $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
+    }*/
     slideno = newTime;
+    //getRemoteAnnot(slideno);
     if(slideno == lowerBound){
         $('#left')[0].disabled = true;
     }
     $('#right')[0].disabled = false;
+    if(synched){
+        toggleSync()
+    }
 }
 
 function moveRight(){
-    var im = new Image();
+    //var im = new Image();
     newTime = slideno + 1;
-    im.src = getTimeImage(newTime);
+    /*im.src = getTimeImage(newTime);*/
     getRemoteImage(newTime);
-    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/jpg");
+    var base64 = $("#annocanvas01_canvas")[0].toDataURL("image/png");
     storeImage(slideno, base64);
     slideno = newTime;
-    im.onload = function (){
-        $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
+    getRemoteAnnot(slideno);
+    /*im.onload = function (){
         CanvasInstances["annocanvas01_canvas"].restartState();
-    }
+        $('#annocanvas01_canvas')[0].getContext('2d').drawImage(im, 0, 0);
+    }*/
     if(slideno == upperBound){
         $('#right')[0].disabled = true;
     }
@@ -115,7 +146,11 @@ function setTimeImage(src){
 }
 
 function storeImage(x, src){
-    sessionStorage.setItem(x, serializeSrc(src));
+    //sessionStorage.setItem(x, serializeSrc(src));
+    var data = {command: 1, time: x, image: src};
+    var str = JSON.stringify(data);
+    spillover.send(str);
+    CanvasInstances["annocanvas01_canvas"].restartState();
 }
 
 function serializeSrc(x){
@@ -139,6 +174,12 @@ function getRemoteImage(x){
     var data = {command: 1, time: x};
     var str = JSON.stringify(data);
     sock.send(str);
+}
+
+function getRemoteAnnot(x){
+    var data = {command: 0, time: x};
+    var str = JSON.stringify(data);
+    spillover.send(str);
 }
 
 function catchUp(){

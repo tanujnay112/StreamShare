@@ -26,7 +26,8 @@ import java.util.concurrent.Executors;
 
 public class Main extends JApplet implements WebcamMotionListener {
 
-    static String location = "";
+  private static final String PASSWORD;
+  static String location = "";
     final static String channelName = "slides";
     static Dimension length;
     static Webcam w;
@@ -40,9 +41,9 @@ public class Main extends JApplet implements WebcamMotionListener {
     static int timestamp = 0;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static Jedis jedis;
 
-    public static void publish(String s) {
-        Jedis jedis = new Jedis(location);
+  public static void publish(String s) {
         //String s = Base64.getEncoder().encodeToString(b);
         //System.out.println(s);
         //s = String.format("%d;%d;%s", d.height, d.width, s);
@@ -52,6 +53,9 @@ public class Main extends JApplet implements WebcamMotionListener {
     }
 
     public Main() {
+        jedis = new Jedis(location, 10133);
+        jedis.auth(PASSWORD);
+        jedis.connect();
         WebcamMotionDetector detector = new WebcamMotionDetector(w);
         detector.setInterval(100);
         detector.addMotionListener(this);
@@ -64,7 +68,7 @@ public class Main extends JApplet implements WebcamMotionListener {
 
         threadPool = Executors.newFixedThreadPool(2);
 
-        location = args[0];
+        location = "redis-10133.c53.west-us.azure.cloud.redislabs.com";
         w = Webcam.getDefault();
         Dimension[] nonStandardResolutions =
             new Dimension[] { WebcamResolution.HD.getSize(), };
